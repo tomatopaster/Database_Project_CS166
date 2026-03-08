@@ -170,14 +170,17 @@ public class EmbeddedSQL {
             // These are sample SQL statements
             System.out.println("MAIN MENU");
             System.out.println("---------");
-            System.out.println("0. Find the pid of parts with cost lower than $_____ (example)");
-            System.out.println("1. Find the total number of parts supplied by each supplier");
-            System.out.println("2. Find the total number of parts supplied by each supplier who supplies at least 3 parts");
-            System.out.println("3. For every supplier that supplies only green parts, print the name of the supplier and the total number of parts that he supplies");
-            System.out.println("4. For every supplier that supplies green part and red part, print the name and the price of the most expensive part that he supplies"); 
-            System.out.println("5. Find the name of parts with cost lower than $_____");
-            System.out.println("6. Find the address of the suppliers who supply _____________ (pname)");
-            System.out.println("9. < EXIT");
+            System.out.println("0. ADD Customer");
+            System.out.println("1. ADD Car");
+            System.out.println("2. ADD Mechanic");
+            System.out.println("3. OPEN Service Request");
+            System.out.println("4. CLOSE Service Request");
+            System.out.println("5. List date, comment, and bill for all closed requests with bill lower than 100");
+            System.out.println("6. List first and last name of customers having more than 20 different cars");
+            System.out.println("7. List Make, Model, and Year of all cars build before 1995 having less than 50000 miles");
+            System.out.println("8. List the make, model and number of service requests for the first k cars with the highest number of service orders");
+            System.out.println("9. List the first name, last name and total bill of customers in descending order of their total bill for all cars brought to the mechanic");
+            System.out.println("10. < QUIT MENU");
 
             switch (readChoice()){
                case 0: QueryExample(esql); break;
@@ -187,7 +190,10 @@ public class EmbeddedSQL {
                case 4: Query4(esql); break;
                case 5: Query5(esql); break;
                case 6: Query6(esql); break;
-               case 9: keepon = false; break;
+               case 7: Query7(esql); break;
+               case 8: Query8(esql); break;
+               case 9: Query9(esql); break;
+               case 10: keepon = false; break;
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
          }//end while
@@ -320,4 +326,38 @@ public class EmbeddedSQL {
       }
    }//end Query6
 
+   public static void Query7(EmbeddedSQL esql){
+      try{
+         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid";
+
+         int rowCount = esql.executeQuery(query);
+         System.out.println ("total row(s): " + rowCount);
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }//end Query7
+
+   public static void Query8(EmbeddedSQL esql){
+      try{
+         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid";
+
+         int rowCount = esql.executeQuery(query);
+         System.out.println ("total row(s): " + rowCount);
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }//end Query8
+
+   public static void Query9(EmbeddedSQL esql){
+      try{
+         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid";
+
+         int rowCount = esql.executeQuery(query);
+         System.out.println ("total row(s): " + rowCount);
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }//end Query9
+
 }//end EmbeddedSQL
+
