@@ -23,11 +23,14 @@ HAVING MAX(SR.odometer) < 50000;
 -- List the make, model and number of service requests for the first k cars with the highest number of service orders.
 -- Find for all cars in the database the number of service requests. Return the make, model and number of service requests for the cars having the k highest number of service requests. The k value should be positive and larger than 0. The user should provide this value. Focus on the open service requests.
 -- Replace 5 with your own variable _________________________________-
-SELECT C.make, C.model, COUNT(SR.*) AS serviceRequestCount
-FROM Cars C, ServiceRequests SR
-WHERE C.VIN = SR.VIN
-GROUP BY C.VIN
-ORDER BY COUNT(SR.*) DESC
+SELECT C.VIN, C.make, C.model, C.serviceRequestCount
+FROM (SELECT C.VIN, C.make, C.model, COUNT(SR.*) AS serviceRequestCount
+      FROM Cars C, ServiceRequests SR
+      WHERE C.VIN = SR.VIN
+      GROUP BY C.VIN) C,
+      ServiceRequests SR
+WHERE C.VIN = SR.VIN AND SR.isOpen = true
+ORDER BY C.serviceRequestCount DESC
 LIMIT 5;
 
 -- List the first name, last name and total bill of customers in descending order of their total bill for all cars brought to the mechanic.
