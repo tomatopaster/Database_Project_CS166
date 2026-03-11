@@ -240,11 +240,11 @@ public class EmbeddedSQL {
       return input;
    }//end readChoice
 
-   public static void QueryExample(EmbeddedSQL esql){
+   public static long QueryExample(EmbeddedSQL esql){
+   long number = 0;
       try{
          String first = "";
          String last = "";
-         long number = 0;
          String address = "";
          while("".equals(first)){
             System.out.println("Enter Customer first name: ");
@@ -276,9 +276,11 @@ public class EmbeddedSQL {
          }
 
          esql.executeUpdate("INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES (\'"+ first + "\', \'" + last + "\', \'" +  number + "\', \'" + address + "\');");
+
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
+   return number;
    }//end QueryExample           esql.executeQuery("SELECT C.* FROM Customers C WHERE C.phone = " + number + ";") == 1
    
    public static void Query1(EmbeddedSQL esql){
@@ -322,9 +324,9 @@ public class EmbeddedSQL {
       }
    }//end Query1
 
-   public static void Query2(EmbeddedSQL esql){
+   public static long Query2(EmbeddedSQL esql){
+   long VIN = 0;
       try{
-         long VIN = 0;
          int carYear = 0;
          String make = "";
          String model = "";
@@ -377,9 +379,11 @@ public class EmbeddedSQL {
          }
 
          esql.executeUpdate("INSERT INTO Cars (VIN, carYear, make, model, phone) VALUES (\'"+ VIN + "\', \'" + carYear + "\', \'" +  make + "\', \'" + model + "\', \'" + number + "\');");
+
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
+   return VIN;
    }//end Query2
 
          //    while(VIN < 100000000L || VIN > 999999999L || !isValid){
@@ -416,7 +420,7 @@ public class EmbeddedSQL {
 
          //find customer 
          int customersFound = esql.executeQuery("SELECT lastName FROM Customers WHERE lastName = \'" + last + "\'");
-         int customerPhone = -1;
+         long customerPhone = -1;
 
          // if no customer last name found, provide option of adding a new customer
          if(customersFound < 1){
@@ -427,18 +431,7 @@ public class EmbeddedSQL {
                switch(in.readLine()){
                   case "Y":
                      addNewCustomer = false;
-                     System.out.println("Enter Customer first name: ");
-                     String firstC = in.readLine();
-                     System.out.println("Enter Customer last name: ");
-                     String lastC = in.readLine();
-                     System.out.println("Enter Customer phone number: ");
-                     int numberC = Integer.parseInt(in.readLine());
-                     System.out.println("Enter Customer address: ");
-                     String addressC = in.readLine();
-
-                     customerPhone = numberC;
-
-                     esql.executeUpdate("INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES (\'"+ firstC + "\', \'" + lastC + "\', \'" +  numberC + "\', \'" + addressC + "\');");
+                     customerPhone = QueryExample(esql);
                      break;
                   case "N":
                      addNewCustomer = false;
@@ -467,7 +460,7 @@ public class EmbeddedSQL {
          }
 
          //car business 
-         int carVIN = -1;
+         long carVIN = -1;
 
          if(customerPhone != -1){
             int carsFound = esql.executeQuery("SELECT carYear, make, model FROM Cars WHERE phone = \'" + customerPhone + "\'");
@@ -481,18 +474,7 @@ public class EmbeddedSQL {
                   switch(in.readLine()){
                      case "Y":
                         addNewCar = false;
-                        System.out.println("Enter Car VIN: ");
-                        int VIN = Integer.parseInt(in.readLine());
-                        System.out.println("Enter Car Year: ");
-                        int year = Integer.parseInt(in.readLine());
-                        System.out.println("Enter Car Make: ");
-                        String make = in.readLine();
-                        System.out.println("Enter Car Model: ");
-                        String model = in.readLine();
-                        
-                        carVIN = VIN;
-
-                        esql.executeUpdate("INSERT INTO Cars (VIN, carYear, make, model, phone) VALUES (\'"+ VIN + "\', \'" + year + "\', \'" +  make + "\', \'" + model + "\', \'" + customerPhone + "\');");
+                        carVIN = Query2(esql);
                         break;
                      case "N":
                         addNewCar = false;
