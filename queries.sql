@@ -44,4 +44,8 @@ ORDER BY SUM(SR.bill) DESC;
 
 \dt
 SELECT * 
+FROM Customers;
+SELECT * 
+FROM Cars;
+SELECT * 
 FROM ServiceRequests;

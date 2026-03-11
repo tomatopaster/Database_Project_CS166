@@ -125,6 +125,29 @@ public class EmbeddedSQL {
       return rowCount;
    }//end executeQuery
 
+
+/**
+    * Method to execute an input query SQL instruction (i.e. SELECT).  This
+    * method issues the query to the DBMS and outputs the results to
+    * standard out.
+    *
+    * @param query the input query string
+    * @return resultset 
+    * @throws java.sql.SQLException when failed to execute the query
+    */
+   public int executeQueryCustomer (String query) throws SQLException {
+      // creates a statement object
+      Statement stmt = this._connection.createStatement ();
+
+      // issues the query instruction
+      ResultSet rs = stmt.executeQuery (query);
+      rs.next();
+      int phoneNumber = rs.getInt(1);
+
+      stmt.close ();
+      return phoneNumber;
+   }//end executeQuery
+
    /**
     * Method to close the physical connection if it is open.
     */
@@ -363,7 +386,7 @@ public class EmbeddedSQL {
             System.out.println("Enter Customer number: ");
             number = Long.parseLong(in.readLine());
             if (number < 1000000000L || number > 9999999999L){
-               System.out.println("Please submit a valid Vehicle ID within bounds of 9 digits.");
+               System.out.println("Please submit a valid Customer phone number within bounds of 9 digits.");
             }
             else{
                System.out.println("Number matches ...");
@@ -453,19 +476,23 @@ public class EmbeddedSQL {
             if(customersFound > 1){
                //list customers with same last name 
                String query = "SELECT firstName, lastName, phone FROM Customers WHERE lastName = \'" + last + "\'";
+               esql.executeQuery(query);
 
-               int rowCount = esql.executeQuery(query);
-               System.out.println ("total row(s): " + rowCount);
+               //select which customer with phone
+               System.out.println("Enter desired customer phone number: ");
+               int phoneNum = Integer.parseInt(in.readLine());
+               if(esql.executeQuery("SELECT phone FROM Customers WHERE phone = \'" + phoneNum + "\'") != 0){
+                  customerPhone = phoneNum;
+               }
                
-               //TODO: choose which customer for service request by updating customerPhone 
-               //System.out.println("Which customer is making the service request? Answer with phone number ");
+               //TODO: input validatoin for phone num 
             }else{
-               //TODO: phone number for customer with only last name 
-               //customerPhone = 
-
+               //phone number for customer with only last name 
+               customerPhone = esql.executeQueryCustomer("SELECT phone FROM Customers WHERE lastName = \'" + last + "\'");
             }
          }
 
+         System.out.println("Customer's phone number is: " + customerPhone);
          //car business 
          int carVIN = -1;
 
@@ -504,15 +531,23 @@ public class EmbeddedSQL {
                }
             }else {
                if(carsFound == 1){
-                  //TODO: carVIN = 
+                  //get VIN for car from customer phone number 
+                  carVIN = esql.executeQueryCustomer("SELECT VIN FROM Cars WHERE phone = \'" + customerPhone + "\'");
+                  System.out.println("Car VIN is: " + carVIN);
                }else{
                   // list all cars associated with that client 
                   System.out.println("List of all cars associated with "+ last + ": ");
                   //TODO: print out all cars of customer 
+                  String query = "SELECT VIN, year, make, model FROM Cars WHERE phone = \'" + customerPhone + "\'";
+                  esql.executeQuery(query);
 
-
-                  //TODO: carVIN = 
-
+                  //select which car with VIN
+                  System.out.println("Enter desired car VIN: ");
+                  int VINN = Integer.parseInt(in.readLine());
+                  System.out.println("VIN: " + VINN);
+                  if(esql.executeQuery("SELECT VIN FROM Cars WHERE VIN = \'" + VINN + "\'") != 0){
+                     carVIN = VINN;
+                  }
                }
             }
          }
@@ -538,7 +573,7 @@ public class EmbeddedSQL {
                      String comments = in.readLine();
                      System.out.println("Enter bill: ");
                      float bill = Float.parseFloat(in.readLine());
-                     System.out.println("Enter if request is open (ture or false): "); //TODO: check input validation? 
+                     System.out.println("Enter if request is open (true or false): "); //TODO: check input validation? 
                      boolean isOpen = Boolean.parseBoolean(in.readLine());
                      
                      //TODO: how to make optional parameters? 
