@@ -242,31 +242,79 @@ public class EmbeddedSQL {
 
    public static void QueryExample(EmbeddedSQL esql){
       try{
-         System.out.println("Enter Customer first name: ");
-         String first = in.readLine();
-         System.out.println("Enter Customer last name: ");
-         String last = in.readLine();
-         System.out.println("Enter Customer phone number: ");
-         int number = Integer.parseInt(in.readLine());
-         System.out.println("Enter Customer address: ");
-         String address = in.readLine();
+         String first = "";
+         String last = "";
+         long number = 0;
+         String address = "";
+         while("".equals(first)){
+            System.out.println("Enter Customer first name: ");
+            first = in.readLine();
+            if ("".equals(first)){
+               System.out.println("Please submit a nonempty first name.");
+            }
+         }
+         while("".equals(last)){
+            System.out.println("Enter Customer last name: ");
+            last = in.readLine();
+            if ("".equals(last)){
+               System.out.println("Please submit a nonempty last name.");
+            }
+         }
+         while(number < 1000000000L || number > 9999999999L){
+            System.out.println("Enter Customer phone number: ");
+            number = Long.parseLong(in.readLine());
+            if (number < 1000000000L || number > 9999999999L){
+               System.out.println("Please submit a valid number within bounds of 10 digits.");
+            }
+         }
+         while("".equals(address)){
+            System.out.println("Enter Customer address: ");
+            address = in.readLine();
+            if ("".equals(address)){
+               System.out.println("Please submit a nonempty address.");
+            }
+         }
 
          esql.executeUpdate("PREPARE customerPlan(text, text, int, text) AS INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES ($1, $2, $3, $4); EXECUTE customerPlan(\'"+ first + "\', \'" + last + "\', \'" +  number + "\', \'" + address + "\');");
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
-   }//end QueryExample
+   }//end QueryExample           esql.executeQuery("SELECT C.* FROM Customers C WHERE C.phone = " + number + ";") == 1
    
    public static void Query1(EmbeddedSQL esql){
       try{
-         System.out.println("Enter Mechanic ID: ");
-         int ID = Integer.parseInt(in.readLine());
-         System.out.println("Enter Mechanic first name: ");
-         String first = in.readLine();
-         System.out.println("Enter Mechanic last name: ");
-         String last = in.readLine();
-         System.out.println("Enter Mechanic years experience: ");
-         int years = Integer.parseInt(in.readLine());
+         long ID = 0;
+         String first = "";
+         String last = "";
+         int years = 0;
+         while(ID < 100000000L || ID > 999999999L){
+            System.out.println("Enter Mechanic ID: ");
+            ID = Long.parseLong(in.readLine());
+            if (ID < 100000000L || ID > 999999999L){
+               System.out.println("Please submit a valid Mechanic ID within bounds of 9 digits.");
+            }
+         }
+         while("".equals(first)){
+            System.out.println("Enter Mechanic first name: ");
+            first = in.readLine();
+            if ("".equals(first)){
+               System.out.println("Please submit a nonempty first name.");
+            }
+         }
+         while("".equals(last)){
+            System.out.println("Enter Mechanic last name: ");
+            last = in.readLine();
+            if ("".equals(last)){
+               System.out.println("Please submit a nonempty last name.");
+            }
+         }
+         while(years < 0 || years > 99){
+            System.out.println("Enter Mechanic years experience: ");
+            years = Integer.parseInt(in.readLine());
+            if (years < 0 || years > 99){
+               System.out.println("Please submit a valid years experience between 0 and 100 years.");
+            }
+         }
 
          esql.executeUpdate("INSERT INTO Mechanics (ID, firstName, lastName, yearsExp) VALUES (\'"+ ID + "\', \'" + first + "\', \'" +  last + "\', \'" + years + "\');");
       }catch(Exception e){
@@ -276,23 +324,81 @@ public class EmbeddedSQL {
 
    public static void Query2(EmbeddedSQL esql){
       try{
-         System.out.println("Enter Car VIN: ");
-         int VIN = Integer.parseInt(in.readLine());
-         System.out.println("Enter Car year: ");
-         int carYear = Integer.parseInt(in.readLine());
-         System.out.println("Enter Car make: ");
-         String make = in.readLine();
-         System.out.println("Enter Car model: ");
-         String model = in.readLine();
+         long VIN = 0;
+         int carYear = 0;
+         String make = "";
+         String model = "";
+         long number = 0;
+         boolean isValid = false;
+         while(VIN < 100000000L || VIN > 999999999L){
+            System.out.println("Enter Car VIN: ");
+            VIN = Long.parseLong(in.readLine());
+            if (VIN < 100000000L || VIN > 999999999L){
+               System.out.println("Please submit a valid Vehicle ID within bounds of 9 digits.");
+            }
+         }
+         while(carYear < 1800 || carYear > 2030){
+            System.out.println("Enter Car year: ");
+            carYear = Integer.parseInt(in.readLine());
+            if (carYear < 1800 || carYear > 2030){
+               System.out.println("Please submit a valid car year between 1800 and 2030.");
+            }
+         }
+         while("".equals(make)){
+            System.out.println("Enter Car make: ");
+            make = in.readLine();
+            if ("".equals(make)){
+               System.out.println("Please submit a nonempty make.");
+            }
+         }
+         while("".equals(model)){
+            System.out.println("Enter Car model: ");
+            model = in.readLine();
+            if ("".equals(model)){
+               System.out.println("Please submit a nonempty model.");
+            }
+         }
          
-         System.out.println("Enter Customer number: ");
-         int number = Integer.parseInt(in.readLine());
+         while(number < 1000000000L || number > 9999999999L || !isValid){
+            System.out.println("Enter Customer number: ");
+            number = Long.parseLong(in.readLine());
+            if (number < 1000000000L || number > 9999999999L){
+               System.out.println("Please submit a valid Vehicle ID within bounds of 9 digits.");
+            }
+            else{
+               System.out.println("Number matches ...");
+               if(esql.executeQuery("SELECT C.* FROM Customers C WHERE C.phone = " + number + ";") == 1){
+                  isValid = true;
+               }
+               else{
+                  System.out.println("None. Please submit a Customer number in the database.");
+               }
+            }
+         }
 
          esql.executeUpdate("INSERT INTO Cars (VIN, carYear, make, model, phone) VALUES (\'"+ VIN + "\', \'" + carYear + "\', \'" +  make + "\', \'" + model + "\', \'" + number + "\');");
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
    }//end Query2
+
+         //    while(VIN < 100000000L || VIN > 999999999L || !isValid){
+         //    System.out.println("Enter Car VIN: ");
+         //    VIN = Long.parseLong(in.readLine());
+         //    if (VIN < 100000000L || VIN > 999999999L){
+         //       System.out.println("Please submit a valid Vehicle ID within bounds of 9 digits.");
+         //    }
+         //    else{
+         //       System.out.println("VIN matches ...");
+         //       if(esql.executeQuery("SELECT C.* FROM Cars C WHERE C.VIN = " + VIN + ";") == 1){
+         //          isValid = true;
+         //       }
+         //       else{
+         //          System.out.println("None. Please submit a Vehicle ID in the database.");
+         //       }
+         //    }
+         // }
+         // isValid = false;
 
    // This function will allow you to add a service request for a customer into the database. 
    // Given a last name, the function should search the database of existing customers. 
