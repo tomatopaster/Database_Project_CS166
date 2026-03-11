@@ -511,7 +511,7 @@ public class EmbeddedSQL {
                   case "Y":
                      addRequest = false;
                      System.out.println("Enter odometer reading: ");
-                     int odometer = Integer.parseInt(in.readLine());
+                     long odometer = Long.parseLong(in.readLine());
                      System.out.println("Enter date in: ");
                      String dateIn = in.readLine();
                      System.out.println("Enter date out: ");
