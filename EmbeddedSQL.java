@@ -306,7 +306,7 @@ public class EmbeddedSQL {
    return number;
    }//end QueryExample           esql.executeQuery("SELECT C.* FROM Customers C WHERE C.phone = " + number + ";") == 1
    
-   public static void Query1(EmbeddedSQL esql){
+   public static void Query2(EmbeddedSQL esql){
       try{
          long ID = 0;
          String first = "";
