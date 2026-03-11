@@ -33,19 +33,19 @@ CREATE TABLE ServiceRequests (odometer numeric (10, 0), dateIn text, dateOut tex
 );
 
 COPY Customers(phone, firstName, lastName, homeAddress)
-FROM '/home/csmajs/athan016/Projects/Database_Project_CS166/data/customers.csv'
+FROM '/home/csmajs/rwong095/Database_Project_CS166/data/customers.csv'
 WITH DELIMITER ',';
 
 COPY Cars(VIN, phone, carYear, make, model)
-FROM '/home/csmajs/athan016/Projects/Database_Project_CS166/data/cars.csv'
+FROM '/home/csmajs/rwong095/Database_Project_CS166/data/cars.csv'
 WITH DELIMITER ',';
 
 COPY Mechanics(VIN, ID, firstName, lastName, yearsExp)
-FROM '/home/csmajs/athan016/Projects/Database_Project_CS166/data/mechanics.csv'
+FROM '/home/csmajs/rwong095/Database_Project_CS166/data/mechanics.csv'
 WITH (DELIMITER ',', NULL '');
 
 COPY ServiceRequests(VIN, odometer, dateIn, dateOut, comments, bill, isOpen)
-FROM '/home/csmajs/athan016/Projects/Database_Project_CS166/data/serviceRequests.csv'
+FROM '/home/csmajs/rwong095/Database_Project_CS166/data/serviceRequests.csv'
 WITH (DELIMITER ',', NULL '');
 
 \dt
