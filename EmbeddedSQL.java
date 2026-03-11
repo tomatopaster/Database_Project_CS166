@@ -242,13 +242,16 @@ public class EmbeddedSQL {
 
    public static void QueryExample(EmbeddedSQL esql){
       try{
-         String query = "SELECT * FROM Catalog WHERE cost < ";
-         System.out.print("\tEnter cost: $");
-         String input = in.readLine();
-         query += input;
+         System.out.println("Enter Customer first name: ");
+         String first = in.readLine();
+         System.out.println("Enter Customer last name: ");
+         String last = in.readLine();
+         System.out.println("Enter Customer phone number: ");
+         int number = Integer.parseInt(in.readLine());
+         System.out.println("Enter Customer address: ");
+         String address = in.readLine();
 
-         int rowCount = esql.executeQuery(query);
-         System.out.println ("total row(s): " + rowCount);
+         esql.executeUpdate("PREPARE customerPlan(text, text, int, text) AS INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES ($1, $2, $3, $4); EXECUTE customerPlan(\'"+ first + "\', \'" + last + "\', \'" +  number + "\', \'" + address + "\');");
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
@@ -256,10 +259,16 @@ public class EmbeddedSQL {
    
    public static void Query1(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid";
+         System.out.println("Enter Mechanic ID: ");
+         int ID = Integer.parseInt(in.readLine());
+         System.out.println("Enter Mechanic first name: ");
+         String first = in.readLine();
+         System.out.println("Enter Mechanic last name: ");
+         String last = in.readLine();
+         System.out.println("Enter Mechanic years experience: ");
+         int years = Integer.parseInt(in.readLine());
 
-         int rowCount = esql.executeQuery(query);
-         System.out.println ("total row(s): " + rowCount);
+         esql.executeUpdate("INSERT INTO Mechanics (ID, firstName, lastName, yearsExp) VALUES (\'"+ ID + "\', \'" + first + "\', \'" +  last + "\', \'" + years + "\');");
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
@@ -267,26 +276,95 @@ public class EmbeddedSQL {
 
    public static void Query2(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid HAVING COUNT(C.pid) >= 3";
+         System.out.println("Enter Car VIN: ");
+         int VIN = Integer.parseInt(in.readLine());
+         System.out.println("Enter Car year: ");
+         int carYear = Integer.parseInt(in.readLine());
+         System.out.println("Enter Car make: ");
+         String make = in.readLine();
+         System.out.println("Enter Car model: ");
+         String model = in.readLine();
+         
+         System.out.println("Enter Customer number: ");
+         int number = Integer.parseInt(in.readLine());
 
-         int rowCount = esql.executeQuery(query);
-         System.out.println ("total row(s): " + rowCount);
+         esql.executeUpdate("INSERT INTO Cars (VIN, carYear, make, model, phone) VALUES (\'"+ VIN + "\', \'" + carYear + "\', \'" +  make + "\', \'" + model + "\', \'" + number + "\');");
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
    }//end Query2
 
+   // This function will allow you to add a service request for a customer into the database. 
+   // Given a last name, the function should search the database of existing customers. 
+
+   // If many customers match, a menu option should appear listing all customers with the given last name asking the user to choose which customer has initiated the service request. 
+   
+         // Otherwise, the client application should provide the option of adding a new customer. 
+   
+   // If an existing customer is chosen, the client application should list all cars associated with that client 
+   // providing the option to initiate the service request for one of the listed cars, otherwise a new car should be added along with the service request information for it.
    public static void Query3(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, S.sid, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid HAVING S.sid NOT IN (SELECT C.sid FROM catalog C, parts P WHERE C.pid = P.pid AND P.color != 'Green')";
+         System.out.println("Enter Customer last name: ");
+         String last = in.readLine();
 
-         int rowCount = esql.executeQuery(query);
-         System.out.println ("total row(s): " + rowCount);
+         // if no customer last name found, provide option of adding a new customer
+         if((esql.executeQuery("SELECT lastName FROM Customers WHERE lastName = \'" + last + "\'")) == 0){
+            boolean addNewCustomer = true;
+            while(addNewCustomer){
+               System.out.println("Would you like to add another customer? Y or N");
+
+               switch(in.readLine()){
+                  case "Y":
+                     addNewCustomer = false;
+                     System.out.println("Enter Customer first name: ");
+                     String firstC = in.readLine();
+                     System.out.println("Enter Customer last name: ");
+                     String lastC = in.readLine();
+                     System.out.println("Enter Customer phone number: ");
+                     int numberC = Integer.parseInt(in.readLine());
+                     System.out.println("Enter Customer address: ");
+                     String addressC = in.readLine();
+
+                     esql.executeUpdate("PREPARE customerPlan(text, text, int, text) AS INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES ($1, $2, $3, $4); EXECUTE customerPlan(\'"+ firstC + "\', \'" + lastC + "\', \'" +  numberC + "\', \'" + addressC + "\');");
+                     break;
+                  default: 
+                     System.out.println("Try again!");
+               }
+
+
+               // String answer = in.readLine();
+               // System.out.println(answer);
+               // if(answer == "Y \n"){
+               //    addNewCustomer = false;
+               //    System.out.println("Enter Customer first name: ");
+               //    String firstC = in.readLine();
+               //    System.out.println("Enter Customer last name: ");
+               //    String lastC = in.readLine();
+               //    System.out.println("Enter Customer phone number: ");
+               //    int numberC = Integer.parseInt(in.readLine());
+               //    System.out.println("Enter Customer address: ");
+               //    String addressC = in.readLine();
+
+               //    esql.executeUpdate("PREPARE customerPlan(text, text, int, text) AS INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES ($1, $2, $3, $4); EXECUTE customerPlan(\'"+ firstC + "\', \'" + lastC + "\', \'" +  numberC + "\', \'" + addressC + "\');");
+               //    break;
+               // }
+            }
+            
+         }else{
+            
+         }
+         
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
    }//end Query3
 
+   // This function will allow you to complete an existing service request. 
+   // Given a service request number and an employee id, the client application should verify 
+   // the information provided and attempt to create a closing request record. 
+   // You should make sure to check for the validity of the provided inputs 
+   // (i.e. does the mechanic exist, does the request exist, valid closing date after request date, etc.)
    public static void Query4(EmbeddedSQL esql){
       try{
          String query = "SELECT S.sname, MAX(C.cost) AS mostCost FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid HAVING S.sid IN ( SELECT C.sid FROM catalog C, parts P WHERE C.pid = P.pid AND P.color = 'Green' INTERSECT SELECT C.sid FROM catalog C, parts P  WHERE C.pid = P.pid AND P.color = 'Red')";
@@ -361,3 +439,38 @@ public class EmbeddedSQL {
 
 }//end EmbeddedSQL
 
+/*
+
+
+    Add Mechanic
+
+Add a new mechanic into the database. You should provide an interface that takes as input the information of a new mechanic (i.e. first, last name, specialty, experience) and checks if the provided information is valid based on the constraints of the database schema.
+
+    Add Car
+
+This function should allow for adding a new car into the database. You should provide an interface that takes as input the information of a new car (i.e. vin, make, model, year) checking if the provided information are valid based on the constrains of the database schema.
+
+    Initiate a Service Request
+
+This function will allow you to add a service request for a customer into the database. Given a last name, the function should search the database of existing customers. If many customers match, a menu option should appear listing all customers with the given last name asking the user to choose which customer has initiated the service request. Otherwise, the client application should provide the option of adding a new customer. If an existing customer is chosen, the client application should list all cars associated with that client providing the option to initiate the service request for one of the listed cars, otherwise a new car should be added along with the service request information for it.
+
+    Close A Service Request
+
+This function will allow you to complete an existing service request. Given a service request number and an employee id, the client application should verify the information provided and attempt to create a closing request record. You should make sure to check for the validity of the provided inputs (i.e. does the mechanic exist, does the request exist, valid closing date after request date, etc.)
+
+    List date, comment, and bill for all clos
+*/
+
+   /**
+    * Add a new customer into the database. 
+    * You should provide an interface that takes as input the information of a new customer 
+    * (i.e. first, last name, phone, address) 
+    * and checks if the provided information are valid based on the constraints 
+    * of the database schema
+    *
+    * @param customer information 
+    */
+   // public void addCustomer (String first, String last, int phone, String address) {
+   //    //check if valid inputs 
+   //    executeUpdate("INSERT INTO Customer VALUES (" + first + ", " + last + ", " + phone + ", " + address + ")");
+   // }

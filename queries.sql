@@ -40,3 +40,8 @@ FROM Customers CU, Cars C, ServiceRequests SR
 WHERE CU.phone = C.phone AND C.VIN = SR.VIN
 GROUP BY CU.phone
 ORDER BY SUM(SR.bill) DESC;
+
+
+\dt
+SELECT * 
+FROM Customers;
