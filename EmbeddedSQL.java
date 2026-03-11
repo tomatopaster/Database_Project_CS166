@@ -251,7 +251,7 @@ public class EmbeddedSQL {
          System.out.println("Enter Customer address: ");
          String address = in.readLine();
 
-         esql.executeUpdate("PREPARE customerPlan(text, text, int, text) AS INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES ($1, $2, $3, $4); EXECUTE customerPlan(\'"+ first + "\', \'" + last + "\', \'" +  number + "\', \'" + address + "\');");
+         esql.executeUpdate("INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES (\'"+ first + "\', \'" + last + "\', \'" +  number + "\', \'" + address + "\');");
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
@@ -301,15 +301,19 @@ public class EmbeddedSQL {
    
          // Otherwise, the client application should provide the option of adding a new customer. 
    
-   // If an existing customer is chosen, the client application should list all cars associated with that client 
+         // If an existing customer is chosen, the client application should list all cars associated with that client 
    // providing the option to initiate the service request for one of the listed cars, otherwise a new car should be added along with the service request information for it.
    public static void Query3(EmbeddedSQL esql){
       try{
          System.out.println("Enter Customer last name: ");
          String last = in.readLine();
 
+         //find customer 
+         int customersFound = esql.executeQuery("SELECT lastName FROM Customers WHERE lastName = \'" + last + "\'");
+         int customerPhone = -1;
+
          // if no customer last name found, provide option of adding a new customer
-         if((esql.executeQuery("SELECT lastName FROM Customers WHERE lastName = \'" + last + "\'")) == 0){
+         if(customersFound < 1){
             boolean addNewCustomer = true;
             while(addNewCustomer){
                System.out.println("Would you like to add another customer? Y or N");
@@ -326,33 +330,122 @@ public class EmbeddedSQL {
                      System.out.println("Enter Customer address: ");
                      String addressC = in.readLine();
 
-                     esql.executeUpdate("PREPARE customerPlan(text, text, int, text) AS INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES ($1, $2, $3, $4); EXECUTE customerPlan(\'"+ firstC + "\', \'" + lastC + "\', \'" +  numberC + "\', \'" + addressC + "\');");
+                     customerPhone = numberC;
+
+                     esql.executeUpdate("INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES (\'"+ firstC + "\', \'" + lastC + "\', \'" +  numberC + "\', \'" + addressC + "\');");
+                     break;
+                  case "N":
+                     addNewCustomer = false;
+                     System.out.println("No new customer added!");
                      break;
                   default: 
                      System.out.println("Try again!");
                }
-
-
-               // String answer = in.readLine();
-               // System.out.println(answer);
-               // if(answer == "Y \n"){
-               //    addNewCustomer = false;
-               //    System.out.println("Enter Customer first name: ");
-               //    String firstC = in.readLine();
-               //    System.out.println("Enter Customer last name: ");
-               //    String lastC = in.readLine();
-               //    System.out.println("Enter Customer phone number: ");
-               //    int numberC = Integer.parseInt(in.readLine());
-               //    System.out.println("Enter Customer address: ");
-               //    String addressC = in.readLine();
-
-               //    esql.executeUpdate("PREPARE customerPlan(text, text, int, text) AS INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES ($1, $2, $3, $4); EXECUTE customerPlan(\'"+ firstC + "\', \'" + lastC + "\', \'" +  numberC + "\', \'" + addressC + "\');");
-               //    break;
-               // }
             }
+         }else {
             
-         }else{
-            
+            if(customersFound > 1){
+               //list customers with same last name 
+               String query = "SELECT firstName, lastName, phone FROM Customers WHERE lastName = \'" + last + "\'";
+
+               int rowCount = esql.executeQuery(query);
+               System.out.println ("total row(s): " + rowCount);
+               
+               //TODO: choose which customer for service request by updating customerPhone 
+               //System.out.println("Which customer is making the service request? Answer with phone number ");
+            }else{
+               //TODO: phone number for customer with only last name 
+               //customerPhone = 
+
+            }
+         }
+
+         //car business 
+         int carVIN = -1;
+
+         if(customerPhone != -1){
+            int carsFound = esql.executeQuery("SELECT carYear, make, model FROM Cars WHERE phone = \'" + customerPhone + "\'");
+
+            //if customer has no cars registered
+            if(carsFound < 1){
+               boolean addNewCar = true;
+               while(addNewCar){
+                  System.out.println("No cars found for customer. Add new Car? Y or N ");
+
+                  switch(in.readLine()){
+                     case "Y":
+                        addNewCar = false;
+                        System.out.println("Enter Car VIN: ");
+                        int VIN = Integer.parseInt(in.readLine());
+                        System.out.println("Enter Car Year: ");
+                        int year = Integer.parseInt(in.readLine());
+                        System.out.println("Enter Car Make: ");
+                        String make = in.readLine();
+                        System.out.println("Enter Car Model: ");
+                        String model = in.readLine();
+                        
+                        carVIN = VIN;
+
+                        esql.executeUpdate("INSERT INTO Cars (VIN, carYear, make, model, phone) VALUES (\'"+ VIN + "\', \'" + year + "\', \'" +  make + "\', \'" + model + "\', \'" + customerPhone + "\');");
+                        break;
+                     case "N":
+                        addNewCar = false;
+                        System.out.println("No new car added!");
+                        break;
+                     default: 
+                        System.out.println("Try again!");
+                  }
+               }
+            }else {
+               if(carsFound == 1){
+                  //TODO: carVIN = 
+               }else{
+                  // list all cars associated with that client 
+                  System.out.println("List of all cars associated with "+ last + ": ");
+                  //TODO: print out all cars of customer 
+
+
+                  //TODO: carVIN = 
+
+               }
+            }
+         }
+
+         //service request business 
+         if(carVIN != -1){
+            //initiate service request 
+            //TODO: test this
+            boolean addRequest = true;
+            while(addRequest){
+               System.out.println("Would you like to open a new service request for this car? Y or N");
+
+               switch(in.readLine()){
+                  case "Y":
+                     addRequest = false;
+                     System.out.println("Enter odometer reading: ");
+                     int odometer = Integer.parseInt(in.readLine());
+                     System.out.println("Enter date in: ");
+                     String dateIn = in.readLine();
+                     System.out.println("Enter date out: ");
+                     String dateOut = in.readLine();
+                     System.out.println("Enter comments: ");
+                     String comments = in.readLine();
+                     System.out.println("Enter bill: ");
+                     float bill = Float.parseFloat(in.readLine());
+                     System.out.println("Enter if request is open (ture or false): "); //TODO: check input validation? 
+                     boolean isOpen = Boolean.parseBoolean(in.readLine());
+                     
+                     //TODO: how to make optional parameters? 
+                     esql.executeUpdate("INSERT INTO ServiceRequests (VIN, odometer, dateIn, dateOut, comments, bill, isOpen) VALUES (\'"+ carVIN + "\', \'" + odometer + "\', \'" +  dateIn + "\', \'" + dateOut + "\', \'" + comments + "\', \'" + bill + "\', \'" + isOpen + "\');");
+                     break;
+                  case "N":
+                     addRequest = false;
+                     System.out.println("No new request opened!");
+                     break;
+                  default: 
+                     System.out.println("Try again!");
+               }
+            }
          }
          
       }catch(Exception e){
