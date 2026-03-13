@@ -299,6 +299,7 @@ public class EmbeddedSQL {
          }
 
          esql.executeUpdate("INSERT INTO Customers (firstName, lastName, phone, homeAddress) VALUES (\'"+ first + "\', \'" + last + "\', \'" +  number + "\', \'" + address + "\');");
+
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
@@ -401,6 +402,7 @@ public class EmbeddedSQL {
          }
 
          esql.executeUpdate("INSERT INTO Cars (VIN, carYear, make, model, phone) VALUES (\'"+ VIN + "\', \'" + carYear + "\', \'" +  make + "\', \'" + model + "\', \'" + number + "\');");
+
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
