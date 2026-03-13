@@ -346,7 +346,8 @@ public class EmbeddedSQL {
       }
    }//end Query1
 
-   public static void Query1(EmbeddedSQL esql){
+   public static long Query1(EmbeddedSQL esql){
+      long VIN = 0;
       try{
          int carYear = 0;
          String make = "";
