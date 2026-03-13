@@ -135,14 +135,14 @@ public class EmbeddedSQL {
     * @return resultset 
     * @throws java.sql.SQLException when failed to execute the query
     */
-   public int executeQueryCustomer (String query) throws SQLException {
+   public long executeQueryCustomer (String query) throws SQLException {
       // creates a statement object
       Statement stmt = this._connection.createStatement ();
 
       // issues the query instruction
       ResultSet rs = stmt.executeQuery (query);
       rs.next();
-      int phoneNumber = rs.getInt(1);
+      long phoneNumber = rs.getLong(1);
 
       stmt.close ();
       return phoneNumber;
@@ -194,8 +194,8 @@ public class EmbeddedSQL {
             System.out.println("MAIN MENU");
             System.out.println("---------");
             System.out.println("0. ADD Customer");
-            System.out.println("1. ADD Car");
-            System.out.println("2. ADD Mechanic");
+            System.out.println("1. ADD Mechanic");
+            System.out.println("2. ADD Car");
             System.out.println("3. OPEN Service Request");
             System.out.println("4. CLOSE Service Request");
             System.out.println("5. List date, comment, and bill for all closed requests with bill lower than 100");
@@ -470,12 +470,12 @@ public class EmbeddedSQL {
 
                //select which customer with phone
                System.out.println("Enter desired customer phone number: ");
-               int phoneNum = Integer.parseInt(in.readLine());
+               long phoneNum = Long.parseLong(in.readLine());
                if(esql.executeQuery("SELECT phone FROM Customers WHERE phone = \'" + phoneNum + "\'") != 0){
                   customerPhone = phoneNum;
+               }else{
+                  System.out.println("No customer with this phone number found.");
                }
-               
-               //TODO: input validatoin for phone num 
             }else{
                //phone number for customer with only last name 
                customerPhone = esql.executeQueryCustomer("SELECT phone FROM Customers WHERE lastName = \'" + last + "\'");
@@ -516,16 +516,16 @@ public class EmbeddedSQL {
                }else{
                   // list all cars associated with that client 
                   System.out.println("List of all cars associated with "+ last + ": ");
-                  //TODO: print out all cars of customer 
-                  String query = "SELECT VIN, year, make, model FROM Cars WHERE phone = \'" + customerPhone + "\'";
+                  String query = "SELECT VIN, carYear, make, model FROM Cars WHERE phone = \'" + customerPhone + "\'";
                   esql.executeQuery(query);
 
                   //select which car with VIN
                   System.out.println("Enter desired car VIN: ");
                   int VINN = Integer.parseInt(in.readLine());
-                  System.out.println("VIN: " + VINN);
                   if(esql.executeQuery("SELECT VIN FROM Cars WHERE VIN = \'" + VINN + "\'") != 0){
                      carVIN = VINN;
+                  }else{
+                     System.out.println("No car with this VIN found.");
                   }
                }
             }
@@ -543,7 +543,7 @@ public class EmbeddedSQL {
                   case "Y":
                      addRequest = false;
                      System.out.println("Enter odometer reading: ");
-                     int odometer = Integer.parseInt(in.readLine());
+                     long odometer = Long.parseLong(in.readLine());
                      System.out.println("Enter date in: ");
                      String dateIn = in.readLine();
                      System.out.println("Enter date out: ");
