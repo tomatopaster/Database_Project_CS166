@@ -573,12 +573,8 @@ public class EmbeddedSQL {
          String dateOut = "";
          String comment = "";
 
-         isValid = false;
-         while(!isValid){
-            System.out.println ("Enter closing date in the form mm/dd/yyyy:");
-            dateOut = in.readLine();
-            isValid = true;
-         }
+         System.out.println ("Enter closing date in the form mm/dd/yyyy:");
+         dateOut = in.readLine();
 
          System.out.println ("Enter a comment (or not if you want):");
          comment = in.readLine();
