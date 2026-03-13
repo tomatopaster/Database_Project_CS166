@@ -548,10 +548,47 @@ public class EmbeddedSQL {
    // (i.e. does the mechanic exist, does the request exist, valid closing date after request date, etc.)
    public static void Query4(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, MAX(C.cost) AS mostCost FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid HAVING S.sid IN ( SELECT C.sid FROM catalog C, parts P WHERE C.pid = P.pid AND P.color = 'Green' INTERSECT SELECT C.sid FROM catalog C, parts P  WHERE C.pid = P.pid AND P.color = 'Red')";
+         long ID = 0;
+         boolean isValid = false;
+         while (!isValid){
+            System.out.println ("Input the ID of the mechanic with the Service Request you want to close:");
+            ID = Long.parseLong(in.readLine());
 
-         int rowCount = esql.executeQuery(query);
-         System.out.println ("total row(s): " + rowCount);
+            System.out.println ("Mechanic ID matches...");
+            if (esql.executeQuery("SELECT M.firstName, M.lastName, M.ID FROM Mechanics M WHERE M.ID = " + ID +";") == 1){
+               System.out.println ("With the VIN...");
+               if(esql.executeQuery("SELECT C.carYear, C.Model, C.Make, M.VIN FROM Mechanics M, Cars C WHERE M.ID = " + ID +" AND C.VIN = M.VIN;") == 1){
+                  isValid = true;
+               }
+               else{
+                  System.out.println ("This mechanic is not working with any vehicles. Cannot close a Service Request.");
+                  return;
+               }
+            }
+            else{
+               System.out.println ("None, please input again.");
+            }
+         }
+
+         String dateOut = "";
+         String comment = "";
+
+         isValid = false;
+         while(!isValid){
+            System.out.println ("Enter closing date in the form mm/dd/yyyy:");
+            dateOut = in.readLine();
+            isValid = true;
+         }
+
+         System.out.println ("Enter a comment (or not if you want):");
+         comment = in.readLine();
+         if(comment.equals("")){
+            comment = "No comment";
+         }
+
+         esql.executeUpdate("UPDATE ServiceRequests SET dateOut = \'" + dateOut + "\', comments = \'" + comment +"\', isOpen = false WHERE VIN = (SELECT M.VIN FROM Mechanics M WHERE M.ID = " + ID +") AND isOpen = true;");
+         esql.executeUpdate("UPDATE Mechanics SET VIN = NULL WHERE ID = " + ID +";");
+
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
