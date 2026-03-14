@@ -538,35 +538,98 @@ public class EmbeddedSQL {
          if(carVIN != -1){
             //initiate service request 
             //TODO: test this
-            boolean addRequest = true;
-            while(addRequest){
-               System.out.println("Would you like to open a new service request for this car? Y or N");
+            //add mechanic 
 
-               switch(in.readLine()){
-                  case "Y":
-                     addRequest = false;
-                     System.out.println("Enter odometer reading: ");
-                     long odometer = Long.parseLong(in.readLine());
-                     System.out.println("Enter date in: ");
-                     String dateIn = in.readLine();
-                     System.out.println("Enter date out: ");
-                     String dateOut = in.readLine();
-                     System.out.println("Enter comments: ");
-                     String comments = in.readLine();
-                     System.out.println("Enter bill: ");
-                     float bill = Float.parseFloat(in.readLine());
-                     System.out.println("Enter if request is open (true or false): "); //TODO: check input validation? 
-                     boolean isOpen = Boolean.parseBoolean(in.readLine());
-                     
-                     //TODO: how to make optional parameters? 
-                     esql.executeUpdate("INSERT INTO ServiceRequests (VIN, odometer, dateIn, dateOut, comments, bill, isOpen) VALUES (\'"+ carVIN + "\', \'" + odometer + "\', \'" +  dateIn + "\', \'" + dateOut + "\', \'" + comments + "\', \'" + bill + "\', \'" + isOpen + "\');");
-                     break;
-                  case "N":
-                     addRequest = false;
-                     System.out.println("No new request opened!");
-                     break;
-                  default: 
-                     System.out.println("Try again!");
+            //check if another open request, if there is then exit 
+            if(esql.executeQuery("SELECT VIN, isOpen FROM ServiceRequests WHERE VIN = \'" + carVIN + "\' AND isOpen = true;") > 0){
+               System.out.println("Another request is already open for this car.");
+            }else{
+               boolean addRequest = true;
+               while(addRequest){
+                  System.out.println("Would you like to open a new service request for this car? Y or N");
+
+                  switch(in.readLine()){
+                     case "Y":
+                        addRequest = false;
+                        System.out.println("Enter odometer reading: ");
+                        long odometer = Long.parseLong(in.readLine());
+
+                        String dateIn = "";
+
+                        boolean isValid = false;
+
+                        while(!isValid){
+                           System.out.println ("Enter opening date in the form mm/dd/yyyy:");
+                           dateIn = in.readLine();
+
+                           isValid = true;
+
+                           if(dateIn.length() == 10 && dateIn.charAt(2) == '/' && dateIn.charAt(5) == '/'){
+                              if(Integer.parseInt(dateIn.substring(0, 2)) > 12 || Integer.parseInt(dateIn.substring(0, 2)) < 1){
+                                 System.out.println ("Enter a valid month.");
+                                 isValid = false;
+                              }
+                              if(Integer.parseInt(dateIn.substring(3, 5)) > 31 || Integer.parseInt(dateIn.substring(3, 5)) < 1){
+                                 System.out.println ("Enter a valid day.");
+                                 isValid = false;
+                              }
+                              if(Integer.parseInt(dateIn.substring(6, 10)) > 2030 || Integer.parseInt(dateIn.substring(6, 10)) < 1){
+                                 System.out.println ("Enter a valid year.");
+                                 isValid = false;
+                              }
+                           }
+                           else{
+                              System.out.println ("Use the format mm/dd/yyyy.");
+                              isValid = false;
+                           }
+                        }
+
+                        System.out.println("Enter bill: "); //TODO: input validation
+                        float bill = Float.parseFloat(in.readLine());
+
+                        System.out.println("Enter if request is open (true or false): ");
+                        boolean isOpen = Boolean.parseBoolean(in.readLine());
+
+                        //check if mechanic exists 
+                        isValid = false;
+                        while(!isValid){
+                           //check if mechanic ID valid 
+                           System.out.println("Enter mechanic ID: ");
+                           Long ID = Long.parseLong(in.readLine());
+                           while(ID < 100000000L || ID > 999999999L){
+                              System.out.println("Enter Mechanic ID: ");
+                              ID = Long.parseLong(in.readLine());
+                              if (ID < 100000000L || ID > 999999999L){
+                                 System.out.println("Please submit a valid Mechanic ID within bounds of 9 digits.");
+                              }
+                           }
+                           if (esql.executeQuery("SELECT M.ID FROM Mechanics M WHERE M.ID = " + ID + ";") > 0){
+                              if(esql.executeQuery("SELECT C.VIN, M.ID FROM Mechanics M, Cars C WHERE M.ID = "+ ID +" AND C.VIN = M.VIN;") == 0){
+                                 System.out.println("Mechanic has been assigned this service request.");
+                                 esql.executeUpdate("UPDATE Mechanics SET VIN = \'"+ carVIN + "\' WHERE ID = " + ID + ";");
+                                 isValid = true;
+                              }else{
+                                 System.out.println("Mechanic already working on another car.");
+                                 isValid = false;
+                              }
+                              
+                           }
+                           else{
+                              System.out.println ("None, please input again.");
+                              isValid = false;
+                           }
+                        }
+                        
+                        //TODO: how to make optional parameters? 
+                        esql.executeUpdate("INSERT INTO ServiceRequests (VIN, odometer, dateIn, bill, isOpen) VALUES (\'"+ carVIN + "\', \'" + odometer + "\', \'" +  dateIn + "\', \'" + bill + "\', \'" + isOpen + "\');");
+                        break;
+                     case "N":
+                        addRequest = false;
+                        System.out.println("No new request opened!");
+                        break;
+                     default: 
+                        System.out.println("Try again!");
+                  }
                }
             }
          }

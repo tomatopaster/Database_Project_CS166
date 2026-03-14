@@ -49,3 +49,5 @@ SELECT *
 FROM Cars;
 SELECT * 
 FROM ServiceRequests;
+SELECT * 
+FROM Mechanics;
