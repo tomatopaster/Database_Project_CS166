@@ -574,17 +574,16 @@ public class EmbeddedSQL {
          String comment = "";
 
          isValid = false;
+         String dateIn = "3/3/0003";
          while(!isValid){
             System.out.println ("Enter closing date in the form mm/dd/yyyy:");
             dateOut = in.readLine();
 
-            String dateIn = "03/03/0003";
-
-            if(dateIn.charAt(2 != '/')){
+            if(dateIn.charAt(2) != '/'){
                dateIn = "0" + dateIn;
             }
             if(dateIn.charAt(5) != '/'){
-               dateIn = dateIn.substring(0,3) + "0" + dateIn.substring(3,9)
+               dateIn = dateIn.substring(0,3) + "0" + dateIn.substring(3,9);
             }
 
             isValid = true;
