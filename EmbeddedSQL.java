@@ -541,6 +541,20 @@ public class EmbeddedSQL {
       }
    }//end Query3
 
+
+   public String executeQueryString (String query) throws SQLException {
+      // creates a statement object
+      Statement stmt = this._connection.createStatement ();
+
+      // issues the query instruction
+      ResultSet rs = stmt.executeQuery (query);
+      rs.next();
+      String givenString = rs.getString(1);
+
+      stmt.close ();
+      return givenString;
+   }//end executeQuery
+
    // This function will allow you to complete an existing service request. 
    // Given a service request number and an employee id, the client application should verify 
    // the information provided and attempt to create a closing request record. 
@@ -574,7 +588,8 @@ public class EmbeddedSQL {
          String comment = "";
 
          isValid = false;
-         String dateIn = "3/3/0003";
+         String dateIn = esql.executeQueryString("SELECT SR.dateIn FROM Mechanics M, ServiceRequests SR WHERE M.ID = " + ID +" AND SR.isOpen = true AND SR.VIN = M.VIN;");
+
          while(!isValid){
             System.out.println ("Enter closing date in the form mm/dd/yyyy:");
             dateOut = in.readLine();
