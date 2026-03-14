@@ -576,6 +576,20 @@ public class EmbeddedSQL {
       }
    }//end Query3
 
+
+   public String executeQueryString (String query) throws SQLException {
+      // creates a statement object
+      Statement stmt = this._connection.createStatement ();
+
+      // issues the query instruction
+      ResultSet rs = stmt.executeQuery (query);
+      rs.next();
+      String givenString = rs.getString(1);
+
+      stmt.close ();
+      return givenString;
+   }//end executeQuery
+
    // This function will allow you to complete an existing service request. 
    // Given a service request number and an employee id, the client application should verify 
    // the information provided and attempt to create a closing request record. 
@@ -583,10 +597,92 @@ public class EmbeddedSQL {
    // (i.e. does the mechanic exist, does the request exist, valid closing date after request date, etc.)
    public static void Query4(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, MAX(C.cost) AS mostCost FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid HAVING S.sid IN ( SELECT C.sid FROM catalog C, parts P WHERE C.pid = P.pid AND P.color = 'Green' INTERSECT SELECT C.sid FROM catalog C, parts P  WHERE C.pid = P.pid AND P.color = 'Red')";
+         long ID = 0;
+         boolean isValid = false;
+         while (!isValid){
+            System.out.println ("Input the ID of the mechanic with the Service Request you want to close:");
+            ID = Long.parseLong(in.readLine());
 
-         int rowCount = esql.executeQuery(query);
-         System.out.println ("total row(s): " + rowCount);
+            System.out.println ("Mechanic ID matches...");
+            if (esql.executeQuery("SELECT M.firstName, M.lastName, M.ID FROM Mechanics M WHERE M.ID = " + ID +";") == 1){
+               System.out.println ("With the VIN...");
+               if(esql.executeQuery("SELECT C.carYear, C.Model, C.Make, M.VIN FROM Mechanics M, Cars C WHERE M.ID = " + ID +" AND C.VIN = M.VIN;") == 1){
+                  isValid = true;
+               }
+               else{
+                  System.out.println ("This mechanic is not working with any vehicles. Cannot close a Service Request.");
+                  return;
+               }
+            }
+            else{
+               System.out.println ("None, please input again.");
+            }
+         }
+
+         String dateOut = "";
+         String comment = "";
+
+         isValid = false;
+         String dateIn = esql.executeQueryString("SELECT SR.dateIn FROM Mechanics M, ServiceRequests SR WHERE M.ID = " + ID +" AND SR.isOpen = true AND SR.VIN = M.VIN;");
+
+         while(!isValid){
+            System.out.println ("Enter closing date in the form mm/dd/yyyy:");
+            dateOut = in.readLine();
+
+            if(dateIn.charAt(2) != '/'){
+               dateIn = "0" + dateIn;
+            }
+            if(dateIn.charAt(5) != '/'){
+               dateIn = dateIn.substring(0,3) + "0" + dateIn.substring(3,9);
+            }
+
+            isValid = true;
+
+            if(dateOut.length() == 10 && dateOut.charAt(2) == '/' && dateOut.charAt(5) == '/'){
+               if(Integer.parseInt(dateOut.substring(0, 2)) > 12 || Integer.parseInt(dateOut.substring(0, 2)) < 1){
+                  System.out.println ("Enter a valid month.");
+                  isValid = false;
+               }
+               if(Integer.parseInt(dateOut.substring(3, 5)) > 31 || Integer.parseInt(dateOut.substring(3, 5)) < 1){
+                  System.out.println ("Enter a valid day.");
+                  isValid = false;
+               }
+               if(Integer.parseInt(dateOut.substring(6, 10)) > 2030 || Integer.parseInt(dateOut.substring(6, 10)) < 1){
+                  System.out.println ("Enter a valid year.");
+                  isValid = false;
+               }
+               if(Integer.parseInt(dateIn.substring(6, 10)) > Integer.parseInt(dateOut.substring(6, 10))){
+                  System.out.println ("Enter a date after or on the dateIn: " + dateIn);
+                  isValid = false;
+               }
+               else if(Integer.parseInt(dateIn.substring(6, 10)) == Integer.parseInt(dateOut.substring(6, 10))){
+                  if(Integer.parseInt(dateIn.substring(0, 2)) > Integer.parseInt(dateOut.substring(0, 2))){
+                     System.out.println ("Enter a date after or on the dateIn: " + dateIn);
+                     isValid = false;
+                  }
+                  else if(Integer.parseInt(dateIn.substring(0, 2)) == Integer.parseInt(dateOut.substring(0, 2))){
+                     if(Integer.parseInt(dateIn.substring(3, 5)) > Integer.parseInt(dateOut.substring(3, 5))){
+                        System.out.println ("Enter a date after or on the dateIn: " + dateIn);
+                        isValid = false;
+                     }
+                  }
+               }
+            }
+            else{
+               System.out.println ("Use the format mm/dd/yyyy.");
+               isValid = false;
+            }
+         }
+
+         System.out.println ("Enter a comment (or not if you want):");
+         comment = in.readLine();
+         if(comment.equals("")){
+            comment = "No comment";
+         }
+
+         esql.executeUpdate("UPDATE ServiceRequests SET dateOut = \'" + dateOut + "\', comments = \'" + comment +"\', isOpen = false WHERE VIN = (SELECT M.VIN FROM Mechanics M WHERE M.ID = " + ID +") AND isOpen = true;");
+         esql.executeUpdate("UPDATE Mechanics SET VIN = NULL WHERE ID = " + ID +";");
+
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
