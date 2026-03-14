@@ -573,8 +573,22 @@ public class EmbeddedSQL {
          String dateOut = "";
          String comment = "";
 
-         System.out.println ("Enter closing date in the form mm/dd/yyyy:");
-         dateOut = in.readLine();
+         while(!isValid){
+            System.out.println ("Enter closing date in the form mm/dd/yyyy:");
+            dateOut = in.readLine();
+
+            isValid = true;
+
+            if(Integer.parseInt(dateOut.substring(0, 2)) > 12 || Integer.parseInt(dateOut.substring(0, 2)) < 1){
+               System.out.println ("Enter a valid month.");
+            }
+            if(Integer.parseInt(dateOut.substring(3, 5)) > 31 || Integer.parseInt(dateOut.substring(3, 5)) < 1){
+               System.out.println ("Enter a valid day.");
+            }
+            if(Integer.parseInt(dateOut.substring(6, 10)) > 2030 || Integer.parseInt(dateOut.substring(6, 10)) < 1){
+               System.out.println ("Enter a valid day.");
+            }
+         }
 
          System.out.println ("Enter a comment (or not if you want):");
          comment = in.readLine();
