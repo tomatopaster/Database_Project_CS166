@@ -207,8 +207,8 @@ public class EmbeddedSQL {
 
             switch (readChoice()){
                case 0: QueryExample(esql); break;
-               case 1: Query1(esql); break;
-               case 2: Query2(esql); break;
+               case 1: Query2(esql); break;
+               case 2: Query1(esql); break;
                case 3: Query3(esql); break;
                case 4: Query4(esql); break;
                case 5: Query5(esql); break;
@@ -388,7 +388,7 @@ public class EmbeddedSQL {
             System.out.println("Enter Customer number: ");
             number = Long.parseLong(in.readLine());
             if (number < 1000000000L || number > 9999999999L){
-               System.out.println("Please submit a valid Customer phone number within bounds of 9 digits.");
+               System.out.println("Please submit a valid Customer phone number within bounds of 10 digits.");
             }
             else{
                System.out.println("Number matches ...");
@@ -501,7 +501,7 @@ public class EmbeddedSQL {
                   switch(in.readLine()){
                      case "Y":
                         addNewCar = false;
-                        carVIN = Query2(esql);
+                        carVIN = Query1(esql);
                         break;
                      case "N":
                         addNewCar = false;
@@ -524,7 +524,7 @@ public class EmbeddedSQL {
 
                   //select which car with VIN
                   System.out.println("Enter desired car VIN: ");
-                  int VINN = Integer.parseInt(in.readLine());
+                  long VINN = Long.parseLong(in.readLine());
                   if(esql.executeQuery("SELECT VIN FROM Cars WHERE VIN = \'" + VINN + "\'") != 0){
                      carVIN = VINN;
                   }else{
