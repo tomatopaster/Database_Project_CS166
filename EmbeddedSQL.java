@@ -125,6 +125,29 @@ public class EmbeddedSQL {
       return rowCount;
    }//end executeQuery
 
+
+/**
+    * Method to execute an input query SQL instruction (i.e. SELECT).  This
+    * method issues the query to the DBMS and outputs the results to
+    * standard out.
+    *
+    * @param query the input query string
+    * @return resultset 
+    * @throws java.sql.SQLException when failed to execute the query
+    */
+   public long executeQueryCustomer (String query) throws SQLException {
+      // creates a statement object
+      Statement stmt = this._connection.createStatement ();
+
+      // issues the query instruction
+      ResultSet rs = stmt.executeQuery (query);
+      rs.next();
+      long phoneNumber = rs.getLong(1);
+
+      stmt.close ();
+      return phoneNumber;
+   }//end executeQuery
+
    /**
     * Method to close the physical connection if it is open.
     */
@@ -171,8 +194,8 @@ public class EmbeddedSQL {
             System.out.println("MAIN MENU");
             System.out.println("---------");
             System.out.println("0. ADD Customer");
-            System.out.println("1. ADD Car");
-            System.out.println("2. ADD Mechanic");
+            System.out.println("1. ADD Mechanic");
+            System.out.println("2. ADD Car");
             System.out.println("3. OPEN Service Request");
             System.out.println("4. CLOSE Service Request");
             System.out.println("5. List date, comment, and bill for all closed requests with bill lower than 100");
@@ -184,8 +207,8 @@ public class EmbeddedSQL {
 
             switch (readChoice()){
                case 0: QueryExample(esql); break;
-               case 1: Query1(esql); break;
-               case 2: Query2(esql); break;
+               case 1: Query2(esql); break;
+               case 2: Query1(esql); break;
                case 3: Query3(esql); break;
                case 4: Query4(esql); break;
                case 5: Query5(esql); break;
@@ -283,7 +306,7 @@ public class EmbeddedSQL {
    return number;
    }//end QueryExample           esql.executeQuery("SELECT C.* FROM Customers C WHERE C.phone = " + number + ";") == 1
    
-   public static void Query1(EmbeddedSQL esql){
+   public static void Query2(EmbeddedSQL esql){
       try{
          long ID = 0;
          String first = "";
@@ -324,8 +347,8 @@ public class EmbeddedSQL {
       }
    }//end Query1
 
-   public static long Query2(EmbeddedSQL esql){
-   long VIN = 0;
+   public static long Query1(EmbeddedSQL esql){
+      long VIN = 0;
       try{
          int carYear = 0;
          String make = "";
@@ -365,7 +388,7 @@ public class EmbeddedSQL {
             System.out.println("Enter Customer number: ");
             number = Long.parseLong(in.readLine());
             if (number < 1000000000L || number > 9999999999L){
-               System.out.println("Please submit a valid Vehicle ID within bounds of 9 digits.");
+               System.out.println("Please submit a valid Customer phone number within bounds of 10 digits.");
             }
             else{
                System.out.println("Number matches ...");
@@ -446,19 +469,23 @@ public class EmbeddedSQL {
             if(customersFound > 1){
                //list customers with same last name 
                String query = "SELECT firstName, lastName, phone FROM Customers WHERE lastName = \'" + last + "\'";
+               esql.executeQuery(query);
 
-               int rowCount = esql.executeQuery(query);
-               System.out.println ("total row(s): " + rowCount);
-               
-               //TODO: choose which customer for service request by updating customerPhone 
-               //System.out.println("Which customer is making the service request? Answer with phone number ");
+               //select which customer with phone
+               System.out.println("Enter desired customer phone number: ");
+               long phoneNum = Long.parseLong(in.readLine());
+               if(esql.executeQuery("SELECT phone FROM Customers WHERE phone = \'" + phoneNum + "\'") != 0){
+                  customerPhone = phoneNum;
+               }else{
+                  System.out.println("No customer with this phone number found.");
+               }
             }else{
-               //TODO: phone number for customer with only last name 
-               //customerPhone = 
-
+               //phone number for customer with only last name 
+               customerPhone = esql.executeQueryCustomer("SELECT phone FROM Customers WHERE lastName = \'" + last + "\'");
             }
          }
 
+         System.out.println("Customer's phone number is: " + customerPhone);
          //car business 
          long carVIN = -1;
 
@@ -474,7 +501,7 @@ public class EmbeddedSQL {
                   switch(in.readLine()){
                      case "Y":
                         addNewCar = false;
-                        carVIN = Query2(esql);
+                        carVIN = Query1(esql);
                         break;
                      case "N":
                         addNewCar = false;
@@ -486,15 +513,23 @@ public class EmbeddedSQL {
                }
             }else {
                if(carsFound == 1){
-                  //TODO: carVIN = 
+                  //get VIN for car from customer phone number 
+                  carVIN = esql.executeQueryCustomer("SELECT VIN FROM Cars WHERE phone = \'" + customerPhone + "\'");
+                  System.out.println("Car VIN is: " + carVIN);
                }else{
                   // list all cars associated with that client 
                   System.out.println("List of all cars associated with "+ last + ": ");
-                  //TODO: print out all cars of customer 
+                  String query = "SELECT VIN, carYear, make, model FROM Cars WHERE phone = \'" + customerPhone + "\'";
+                  esql.executeQuery(query);
 
-
-                  //TODO: carVIN = 
-
+                  //select which car with VIN
+                  System.out.println("Enter desired car VIN: ");
+                  long VINN = Long.parseLong(in.readLine());
+                  if(esql.executeQuery("SELECT VIN FROM Cars WHERE VIN = \'" + VINN + "\'") != 0){
+                     carVIN = VINN;
+                  }else{
+                     System.out.println("No car with this VIN found.");
+                  }
                }
             }
          }
@@ -503,35 +538,98 @@ public class EmbeddedSQL {
          if(carVIN != -1){
             //initiate service request 
             //TODO: test this
-            boolean addRequest = true;
-            while(addRequest){
-               System.out.println("Would you like to open a new service request for this car? Y or N");
+            //add mechanic 
 
-               switch(in.readLine()){
-                  case "Y":
-                     addRequest = false;
-                     System.out.println("Enter odometer reading: ");
-                     long odometer = Long.parseLong(in.readLine());
-                     System.out.println("Enter date in: ");
-                     String dateIn = in.readLine();
-                     System.out.println("Enter date out: ");
-                     String dateOut = in.readLine();
-                     System.out.println("Enter comments: ");
-                     String comments = in.readLine();
-                     System.out.println("Enter bill: ");
-                     float bill = Float.parseFloat(in.readLine());
-                     System.out.println("Enter if request is open (ture or false): "); //TODO: check input validation? 
-                     boolean isOpen = Boolean.parseBoolean(in.readLine());
-                     
-                     //TODO: how to make optional parameters? 
-                     esql.executeUpdate("INSERT INTO ServiceRequests (VIN, odometer, dateIn, dateOut, comments, bill, isOpen) VALUES (\'"+ carVIN + "\', \'" + odometer + "\', \'" +  dateIn + "\', \'" + dateOut + "\', \'" + comments + "\', \'" + bill + "\', \'" + isOpen + "\');");
-                     break;
-                  case "N":
-                     addRequest = false;
-                     System.out.println("No new request opened!");
-                     break;
-                  default: 
-                     System.out.println("Try again!");
+            //check if another open request, if there is then exit 
+            if(esql.executeQuery("SELECT VIN, isOpen FROM ServiceRequests WHERE VIN = \'" + carVIN + "\' AND isOpen = true;") > 0){
+               System.out.println("Another request is already open for this car.");
+            }else{
+               boolean addRequest = true;
+               while(addRequest){
+                  System.out.println("Would you like to open a new service request for this car? Y or N");
+
+                  switch(in.readLine()){
+                     case "Y":
+                        addRequest = false;
+                        System.out.println("Enter odometer reading: ");
+                        long odometer = Long.parseLong(in.readLine());
+
+                        String dateIn = "";
+
+                        boolean isValid = false;
+
+                        while(!isValid){
+                           System.out.println ("Enter opening date in the form mm/dd/yyyy:");
+                           dateIn = in.readLine();
+
+                           isValid = true;
+
+                           if(dateIn.length() == 10 && dateIn.charAt(2) == '/' && dateIn.charAt(5) == '/'){
+                              if(Integer.parseInt(dateIn.substring(0, 2)) > 12 || Integer.parseInt(dateIn.substring(0, 2)) < 1){
+                                 System.out.println ("Enter a valid month.");
+                                 isValid = false;
+                              }
+                              if(Integer.parseInt(dateIn.substring(3, 5)) > 31 || Integer.parseInt(dateIn.substring(3, 5)) < 1){
+                                 System.out.println ("Enter a valid day.");
+                                 isValid = false;
+                              }
+                              if(Integer.parseInt(dateIn.substring(6, 10)) > 2030 || Integer.parseInt(dateIn.substring(6, 10)) < 1){
+                                 System.out.println ("Enter a valid year.");
+                                 isValid = false;
+                              }
+                           }
+                           else{
+                              System.out.println ("Use the format mm/dd/yyyy.");
+                              isValid = false;
+                           }
+                        }
+
+                        System.out.println("Enter bill: "); //TODO: input validation
+                        float bill = Float.parseFloat(in.readLine());
+
+                        System.out.println("Enter if request is open (true or false): ");
+                        boolean isOpen = Boolean.parseBoolean(in.readLine());
+
+                        //check if mechanic exists 
+                        isValid = false;
+                        while(!isValid){
+                           //check if mechanic ID valid 
+                           System.out.println("Enter mechanic ID: ");
+                           Long ID = Long.parseLong(in.readLine());
+                           while(ID < 100000000L || ID > 999999999L){
+                              System.out.println("Enter Mechanic ID: ");
+                              ID = Long.parseLong(in.readLine());
+                              if (ID < 100000000L || ID > 999999999L){
+                                 System.out.println("Please submit a valid Mechanic ID within bounds of 9 digits.");
+                              }
+                           }
+                           if (esql.executeQuery("SELECT M.ID FROM Mechanics M WHERE M.ID = " + ID + ";") > 0){
+                              if(esql.executeQuery("SELECT C.VIN, M.ID FROM Mechanics M, Cars C WHERE M.ID = "+ ID +" AND C.VIN = M.VIN;") == 0){
+                                 System.out.println("Mechanic has been assigned this service request.");
+                                 esql.executeUpdate("UPDATE Mechanics SET VIN = \'"+ carVIN + "\' WHERE ID = " + ID + ";");
+                                 isValid = true;
+                              }else{
+                                 System.out.println("Mechanic already working on another car.");
+                                 isValid = false;
+                              }
+                              
+                           }
+                           else{
+                              System.out.println ("None, please input again.");
+                              isValid = false;
+                           }
+                        }
+                        
+                        //TODO: how to make optional parameters? 
+                        esql.executeUpdate("INSERT INTO ServiceRequests (VIN, odometer, dateIn, bill, isOpen) VALUES (\'"+ carVIN + "\', \'" + odometer + "\', \'" +  dateIn + "\', \'" + bill + "\', \'" + isOpen + "\');");
+                        break;
+                     case "N":
+                        addRequest = false;
+                        System.out.println("No new request opened!");
+                        break;
+                     default: 
+                        System.out.println("Try again!");
+                  }
                }
             }
          }
