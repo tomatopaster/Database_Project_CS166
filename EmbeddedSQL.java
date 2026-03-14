@@ -573,20 +573,55 @@ public class EmbeddedSQL {
          String dateOut = "";
          String comment = "";
 
+         isValid = false;
          while(!isValid){
             System.out.println ("Enter closing date in the form mm/dd/yyyy:");
             dateOut = in.readLine();
 
+            String dateIn = "03/03/0003";
+
+            if(dateIn.charAt(2 != '/')){
+               dateIn = "0" + dateIn;
+            }
+            if(dateIn.charAt(5) != '/'){
+               dateIn = dateIn.substring(0,3) + "0" + dateIn.substring(3,9)
+            }
+
             isValid = true;
 
-            if(Integer.parseInt(dateOut.substring(0, 2)) > 12 || Integer.parseInt(dateOut.substring(0, 2)) < 1){
-               System.out.println ("Enter a valid month.");
+            if(dateOut.length() == 10 && dateOut.charAt(2) == '/' && dateOut.charAt(5) == '/'){
+               if(Integer.parseInt(dateOut.substring(0, 2)) > 12 || Integer.parseInt(dateOut.substring(0, 2)) < 1){
+                  System.out.println ("Enter a valid month.");
+                  isValid = false;
+               }
+               if(Integer.parseInt(dateOut.substring(3, 5)) > 31 || Integer.parseInt(dateOut.substring(3, 5)) < 1){
+                  System.out.println ("Enter a valid day.");
+                  isValid = false;
+               }
+               if(Integer.parseInt(dateOut.substring(6, 10)) > 2030 || Integer.parseInt(dateOut.substring(6, 10)) < 1){
+                  System.out.println ("Enter a valid year.");
+                  isValid = false;
+               }
+               if(Integer.parseInt(dateIn.substring(6, 10)) > Integer.parseInt(dateOut.substring(6, 10))){
+                  System.out.println ("Enter a date after or on the dateIn: " + dateIn);
+                  isValid = false;
+               }
+               else if(Integer.parseInt(dateIn.substring(6, 10)) == Integer.parseInt(dateOut.substring(6, 10))){
+                  if(Integer.parseInt(dateIn.substring(0, 2)) > Integer.parseInt(dateOut.substring(0, 2))){
+                     System.out.println ("Enter a date after or on the dateIn: " + dateIn);
+                     isValid = false;
+                  }
+                  else if(Integer.parseInt(dateIn.substring(0, 2)) == Integer.parseInt(dateOut.substring(0, 2))){
+                     if(Integer.parseInt(dateIn.substring(3, 5)) > Integer.parseInt(dateOut.substring(3, 5))){
+                        System.out.println ("Enter a date after or on the dateIn: " + dateIn);
+                        isValid = false;
+                     }
+                  }
+               }
             }
-            if(Integer.parseInt(dateOut.substring(3, 5)) > 31 || Integer.parseInt(dateOut.substring(3, 5)) < 1){
-               System.out.println ("Enter a valid day.");
-            }
-            if(Integer.parseInt(dateOut.substring(6, 10)) > 2030 || Integer.parseInt(dateOut.substring(6, 10)) < 1){
-               System.out.println ("Enter a valid day.");
+            else{
+               System.out.println ("Use the format mm/dd/yyyy.");
+               isValid = false;
             }
          }
 
