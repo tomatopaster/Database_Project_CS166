@@ -565,6 +565,8 @@ public class EmbeddedSQL {
          long ID = 0;
          boolean isValid = false;
          while (!isValid){
+            // There's not really a SR identifier, as we made it a relation, so we just check the mechanics
+            // Assuming if you chose this option you don't want to back out too :P
             System.out.println ("Input the ID of the mechanic with the Service Request you want to close:");
             ID = Long.parseLong(in.readLine());
 
@@ -589,7 +591,9 @@ public class EmbeddedSQL {
 
          isValid = false;
          String dateIn = esql.executeQueryString("SELECT SR.dateIn FROM Mechanics M, ServiceRequests SR WHERE M.ID = " + ID +" AND SR.isOpen = true AND SR.VIN = M.VIN;");
-
+         
+         // Date validation, assuming dateOut must be after or the same day as the dateIn
+         // Also assuming that the customer only inputs numbers at a correct format :holding_back_tears:
          while(!isValid){
             System.out.println ("Enter closing date in the form mm/dd/yyyy:");
             dateOut = in.readLine();
@@ -639,12 +643,14 @@ public class EmbeddedSQL {
             }
          }
 
+         // No empty strings should be in our comments for sake of knowing
          System.out.println ("Enter a comment (or not if you want):");
          comment = in.readLine();
          if(comment.equals("")){
             comment = "No comment";
          }
 
+         // Updates the SR to be closed with comment and date, and updates mechanic to be free
          esql.executeUpdate("UPDATE ServiceRequests SET dateOut = \'" + dateOut + "\', comments = \'" + comment +"\', isOpen = false WHERE VIN = (SELECT M.VIN FROM Mechanics M WHERE M.ID = " + ID +") AND isOpen = true;");
          esql.executeUpdate("UPDATE Mechanics SET VIN = NULL WHERE ID = " + ID +";");
 
@@ -653,6 +659,7 @@ public class EmbeddedSQL {
       }
    }//end Query4
 
+   // Query should be self explanatory
    public static void Query5(EmbeddedSQL esql){
       try{
          String query = "SELECT CU.firstName, CU.lastName, SR.dateIn, SR.dateOut, SR.comments, SR.bill FROM Customers CU, Cars C, ServiceRequests SR WHERE CU.phone = C.phone AND C.VIN = SR.VIN AND SR.bill < 100;";
@@ -664,6 +671,7 @@ public class EmbeddedSQL {
       }
    }//end Query5
 
+   // Theres only one customer with this Verina or smt
    public static void Query6(EmbeddedSQL esql){
       try{
          String query = "SELECT CU.firstName, CU.lastName, COUNT(C.*) AS carCount FROM Customers CU, Cars C WHERE CU.phone = C.phone GROUP BY CU.phone HAVING COUNT(C.*) > 20;";
@@ -675,6 +683,7 @@ public class EmbeddedSQL {
       }
    }//end Query6
 
+   // Assuming the largest odometer out of all SR's for a given car is its latest odometer
    public static void Query7(EmbeddedSQL esql){
       try{
          String query = "SELECT C.make, C.model, MAX(SR.odometer) AS odometerMiles FROM Cars C, ServiceRequests SR WHERE C.VIN = SR.VIN AND C.carYear < 1995 GROUP BY C.VIN HAVING MAX(SR.odometer) < 50000;";
@@ -686,6 +695,7 @@ public class EmbeddedSQL {
       }
    }//end Query7
 
+   // Assuming Focus on open SR's means only check the cars with open SR's
    public static void Query8(EmbeddedSQL esql){
       try{
          String query = "SELECT C.VIN, C.make, C.model, C.serviceRequestCount FROM (SELECT C.VIN, C.make, C.model, COUNT(SR.*) AS serviceRequestCount FROM Cars C, ServiceRequests SR WHERE C.VIN = SR.VIN GROUP BY C.VIN) C, ServiceRequests SR WHERE C.VIN = SR.VIN AND SR.isOpen = true ORDER BY C.serviceRequestCount DESC LIMIT ";
@@ -699,6 +709,7 @@ public class EmbeddedSQL {
       }
    }//end Query8
 
+   // Assuming Sum includes all cars and all service requests of a person
    public static void Query9(EmbeddedSQL esql){
       try{
          String query = "SELECT CU.firstName, CU.lastName, SUM(SR.bill) AS totalBill FROM Customers CU, Cars C, ServiceRequests SR WHERE CU.phone = C.phone AND C.VIN = SR.VIN GROUP BY CU.phone ORDER BY SUM(SR.bill) DESC;";
