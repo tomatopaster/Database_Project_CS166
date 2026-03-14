@@ -201,7 +201,7 @@ public class EmbeddedSQL {
             System.out.println("5. List date, comment, and bill for all closed requests with bill lower than 100");
             System.out.println("6. List first and last name of customers having more than 20 different cars");
             System.out.println("7. List Make, Model, and Year of all cars build before 1995 having less than 50000 miles");
-            System.out.println("8. List the make, model and number of service requests for the first k cars with the highest number of service orders");
+            System.out.println("8. List the make, model and number of service requests for the first k cars with the highest number of service orders that have an open SR");
             System.out.println("9. List the first name, last name and total bill of customers in descending order of their total bill for all cars brought to the mechanic");
             System.out.println("10. < QUIT MENU");
 
@@ -663,6 +663,8 @@ public class EmbeddedSQL {
          long ID = 0;
          boolean isValid = false;
          while (!isValid){
+            // There's not really a SR identifier, as we made it a relation, so we just check the mechanics
+            // Assuming if you chose this option you don't want to back out too :P
             System.out.println ("Input the ID of the mechanic with the Service Request you want to close:");
             ID = Long.parseLong(in.readLine());
 
@@ -687,7 +689,9 @@ public class EmbeddedSQL {
 
          isValid = false;
          String dateIn = esql.executeQueryString("SELECT SR.dateIn FROM Mechanics M, ServiceRequests SR WHERE M.ID = " + ID +" AND SR.isOpen = true AND SR.VIN = M.VIN;");
-
+         
+         // Date validation, assuming dateOut must be after or the same day as the dateIn
+         // Also assuming that the customer only inputs numbers at a correct format :holding_back_tears:
          while(!isValid){
             System.out.println ("Enter closing date in the form mm/dd/yyyy:");
             dateOut = in.readLine();
@@ -737,12 +741,14 @@ public class EmbeddedSQL {
             }
          }
 
+         // No empty strings should be in our comments for sake of knowing
          System.out.println ("Enter a comment (or not if you want):");
          comment = in.readLine();
          if(comment.equals("")){
             comment = "No comment";
          }
 
+         // Updates the SR to be closed with comment and date, and updates mechanic to be free
          esql.executeUpdate("UPDATE ServiceRequests SET dateOut = \'" + dateOut + "\', comments = \'" + comment +"\', isOpen = false WHERE VIN = (SELECT M.VIN FROM Mechanics M WHERE M.ID = " + ID +") AND isOpen = true;");
          esql.executeUpdate("UPDATE Mechanics SET VIN = NULL WHERE ID = " + ID +";");
 
@@ -751,12 +757,10 @@ public class EmbeddedSQL {
       }
    }//end Query4
 
+   // Query should be self explanatory
    public static void Query5(EmbeddedSQL esql){
       try{
-         String query = "SELECT P.pname FROM Catalog C, parts P WHERE C.pid = P.pid AND cost < ";
-         System.out.print("\tEnter cost: $");
-         String input = in.readLine();
-         query += input;
+         String query = "SELECT CU.firstName, CU.lastName, SR.dateIn, SR.dateOut, SR.comments, SR.bill FROM Customers CU, Cars C, ServiceRequests SR WHERE CU.phone = C.phone AND C.VIN = SR.VIN AND SR.bill < 100;";
 
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
@@ -765,12 +769,10 @@ public class EmbeddedSQL {
       }
    }//end Query5
 
+   // Theres only one customer with this Verina or smt
    public static void Query6(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.address FROM suppliers S, Catalog C, parts P WHERE S.sid = C.sid AND C.pid = P.pid AND P.pname = '";
-         System.out.print("\tEnter Part Name: ");
-         String input = in.readLine();
-         query += input + "'";
+         String query = "SELECT CU.firstName, CU.lastName, COUNT(C.*) AS carCount FROM Customers CU, Cars C WHERE CU.phone = C.phone GROUP BY CU.phone HAVING COUNT(C.*) > 20;";
 
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
@@ -779,9 +781,10 @@ public class EmbeddedSQL {
       }
    }//end Query6
 
+   // Assuming the largest odometer out of all SR's for a given car is its latest odometer
    public static void Query7(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid";
+         String query = "SELECT C.make, C.model, MAX(SR.odometer) AS odometerMiles FROM Cars C, ServiceRequests SR WHERE C.VIN = SR.VIN AND C.carYear < 1995 GROUP BY C.VIN HAVING MAX(SR.odometer) < 50000;";
 
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
@@ -790,9 +793,12 @@ public class EmbeddedSQL {
       }
    }//end Query7
 
+   // Assuming Focus on open SR's means only check the cars with open SR's
    public static void Query8(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid";
+         String query = "SELECT C.VIN, C.make, C.model, C.serviceRequestCount FROM (SELECT C.VIN, C.make, C.model, COUNT(SR.*) AS serviceRequestCount FROM Cars C, ServiceRequests SR WHERE C.VIN = SR.VIN GROUP BY C.VIN) C, ServiceRequests SR WHERE C.VIN = SR.VIN AND SR.isOpen = true ORDER BY C.serviceRequestCount DESC LIMIT ";
+         System.out.println("Select # of highest cars to find:");
+         query = query + in.readLine();
 
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
@@ -801,10 +807,11 @@ public class EmbeddedSQL {
       }
    }//end Query8
 
+   // Assuming Sum includes all cars and all service requests of a person
    public static void Query9(EmbeddedSQL esql){
       try{
-         String query = "SELECT S.sname, COUNT(C.pid) AS numParts FROM suppliers S, catalog C WHERE S.sid = C.sid GROUP BY S.sid";
-
+         String query = "SELECT CU.firstName, CU.lastName, SUM(SR.bill) AS totalBill FROM Customers CU, Cars C, ServiceRequests SR WHERE CU.phone = C.phone AND C.VIN = SR.VIN GROUP BY CU.phone ORDER BY SUM(SR.bill) DESC;";
+         
          int rowCount = esql.executeQuery(query);
          System.out.println ("total row(s): " + rowCount);
       }catch(Exception e){
